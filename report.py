@@ -1,28 +1,35 @@
-
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.colors import Color
 
-def generate_pdf_report(user_id: int, profile_text: str, path: str | None = None) -> str:
-    if path is None:
-        path = f"psychevision_profile_{user_id}.pdf"
+def generate_pdf_report(user_id, profile_text):
+    pdfmetrics.registerFont(TTFont('DejaVu', 'DejaVuSans.ttf'))
 
-    c = canvas.Canvas(path, pagesize=A4)
-    width, height = A4
+    filename = f"psychevision_profile_{user_id}.pdf"
+    c = canvas.Canvas(filename, pagesize=A4)
 
-    # Заголовок
-    c.setFillColor(colors.HexColor("#0F3D73"))
-    c.setFont("Helvetica-Bold", 20)
-    c.drawString(72, height - 72, "PsycheVision — Psychological Profile")
+    # синій корпоративний колір
+    header_color = Color(0/255, 51/255, 102/255)
 
-    # Тіло звіту
-    c.setFillColor(colors.black)
-    c.setFont("Helvetica", 10)
-    text_obj = c.beginText(72, height - 110)
+    # Титул
+    c.setFont("DejaVu", 26)
+    c.setFillColor(header_color)
+    c.drawString(50, 800, "PsycheVision · Психологічний профіль")
+
+    # Основний текст
+    c.setFont("DejaVu", 12)
+    c.setFillColorRGB(0, 0, 0)
+
+    y = 760
     for line in profile_text.split("\n"):
-        text_obj.textLine(line)
-    c.drawText(text_obj)
+        c.drawString(50, y, line)
+        y -= 18
+        if y < 50:
+            c.showPage()
+            c.setFont("DejaVu", 12)
+            y = 800
 
-    c.showPage()
     c.save()
-    return path
+    return filename
